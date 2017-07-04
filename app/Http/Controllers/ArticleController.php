@@ -3,17 +3,46 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Article;
 
-class Article extends Controller
+use Validator;
+use Response;
+use Iluminate\Support\Facades\Input;
+
+class ArticleController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
+    public function vueCrud(){
+      
+        return view('/vuejscrud/index');
+        }
+    
     public function index()
     {
-        //
+        $article = Article::latest()->paginate(10);
+        
+        $response = [
+            
+            'pagination' => [
+                
+                'total' => $article->total(),
+                'per_page' => $article->perPage(),
+                'current_page' => $article->currentPage(),
+                'last_page' => $article->lastPage(),
+                'from' => $article->FirstItem(),
+                'to' => $article->lastItem()
+                ],
+            
+            'data' =>$article
+        ];
+        
+        return response()->json($response);
+        
+        
     }
 
     /**
@@ -34,7 +63,13 @@ class Article extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $this->validate($request,[
+           'title' => 'required',
+           'description' => 'required',     
+                ]);
+    
+        $create = Article::create($request->all());
+        return response()->json($create);
     }
 
     /**
@@ -68,7 +103,13 @@ class Article extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $this->validate($request,[
+           'title' => 'required',
+           'description' => 'required',     
+            ]);
+    
+        $edit = Article::find($id)->update($request->all());
+        return response()->json($edit);
     }
 
     /**
@@ -79,6 +120,7 @@ class Article extends Controller
      */
     public function destroy($id)
     {
-        //
+        Article::find($id)->delete();
+        return response()->json(['done']);
     }
 }
